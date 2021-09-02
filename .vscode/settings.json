@@ -1,0 +1,12 @@
+{
+	"editor.tabSize": 2,
+	"editor.detectIndentation": false,
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"editor.insertSpaces": false,
+	"files.eol": "\n",
+	"files.insertFinalNewline": true,
+	"javascript.preferences.importModuleSpecifier": "relative",
+	"javascript.preferences.importModuleSpecifierEnding": "js",
+	"typescript.preferences.importModuleSpecifier": "relative",
+	"typescript.preferences.importModuleSpecifierEnding": "js"
+}

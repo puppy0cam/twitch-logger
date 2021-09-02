@@ -1,0 +1,27 @@
+{
+	"name": "twitch-logger",
+	"version": "0.0.1",
+	"description": "Logging twitch chat",
+	"main": "dist/index.js",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"start": "node --enable-source-maps --harmony-top-level-await ."
+	},
+	"type": "module",
+	"author": "puppy0cam <7194673+puppy0cam@users.noreply.github.com>",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "16.4.13",
+		"typescript": "^4.5.0-dev.20210901"
+	},
+	"dependencies": {
+		"@types/ws": "^7.4.7",
+		"node-fetch": "^3.0.0",
+		"ws": "^8.2.1"
+	},
+	"optionalDependencies": {
+		"bufferutil": "^4.0.3",
+		"utf-8-validate": "^5.0.5"
+	}
+}

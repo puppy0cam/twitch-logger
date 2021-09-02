@@ -1,0 +1,10 @@
+{
+	"discord": {
+		"webhook": ""
+	},
+	"twitch": {
+		"username": "bottythebot",
+		"channel": "twitch",
+		"oauth_password": ""
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"alwaysStrict": true,
+		"baseUrl": "/",
+		"declaration": true,
+		"declarationMap": true,
+		"esModuleInterop": false,
+		"forceConsistentCasingInFileNames": true,
+		"incremental": true,
+		"isolatedModules": true,
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"newLine": "lf",
+		"outDir": "dist",
+		"rootDir": "src",
+		"sourceMap": true,
+		"strict": true,
+		"target": "ES2021",
+		"tsBuildInfoFile": ".tsbuildinfo",
+	},
+}
