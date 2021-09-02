@@ -2,6 +2,7 @@ import { config } from "./config.js";
 import * as _WebSocket from "ws";
 import { getDefault } from "./getDefault.js";
 import { open } from "fs/promises";
+import { IWebhookEmbed } from "./config/discord.js";
 
 const WebSocket = getDefault(_WebSocket);
 
@@ -26,6 +27,9 @@ function onOpen(event: {
 	ws.send(`PASS ${config.twitch.oauth_password}`);
 	ws.send(`NICK ${config.twitch.username}`);
 	ws.send(`JOIN #${config.twitch.channel}`);
+	config.discord.execute({
+		content: 'Connected, and authenticating',
+	});
 }
 
 const lineSplitter = /\r?\n/g;
@@ -37,6 +41,43 @@ function parseTag(tag: string): [string, string] | string {
 	return [key, value];
 }
 
+function toEmbed(meta: (string | [string, string])[], command: string, args: string[]): IWebhookEmbed | undefined {
+	"use strict";
+	if (command === 'PRIVMSG') {
+		const [channel, ...text] = args;
+		const msg = text.join(' ').slice(1);
+		let displayName: string | undefined;
+		let displayColor: number | undefined;
+		let timestamp: string | undefined;
+		for (const i of meta) {
+			if (typeof i === 'string') {
+			} else {
+				const [key, value] = i;
+				if (key === 'display-name') {
+					displayName = value;
+				}
+				if (key === 'color') {
+					const res = parseInt(value.slice(1), 16);
+					if (isFinite(res)) displayColor = res;
+				}
+				if (key === 'tmi-sent-ts') {
+					const time = Number(value);
+					if (isFinite(time)) timestamp = new Date(time).toISOString();
+				}
+			}
+		}
+		return {
+			author: displayName ? {
+				name: displayName,
+			} : void 0,
+			color: displayColor,
+			description: msg,
+			title: 'New Message',
+			timestamp,
+		};
+	}
+}
+
 function onMessage(event: {
 	target: _WebSocket;
 	data: string;
@@ -45,6 +86,7 @@ function onMessage(event: {
 	logstream.write(event.data);
 	const messages = event.data.split(lineSplitter) as string[];
 	messages.pop();
+	const embeds = [];
 	const length = messages.length;
 	for (let i = 0; i < length; i++) {
 		const message = messages[i];
@@ -58,6 +100,8 @@ function onMessage(event: {
 			meta = split.shift()!.split(';').map(parseTag);
 		} else meta = [];
 		const [, command, ...args] = split;
+		const embed = toEmbed(meta, command, args);
+		if (embed) embeds.push(embed);
 		if (command === 'PRIVMSG') {
 			const [channel, ...text] = args;
 			if (channel !== `#${config.twitch.channel}`) continue;
@@ -83,10 +127,19 @@ function onMessage(event: {
 			}
 		}
 	}
+	if (embeds.length) config.discord.execute({
+		allowed_mentions: {
+			parse: [],
+		},
+		embeds,
+	});
 }
 
 function onDisconnect() {
 	"use strict";
+	config.discord.execute({
+		content: 'Disconnected',
+	});
 	if (shutdown) {
 		interval1.unref();
 		clearInterval(interval1);
