@@ -27,7 +27,7 @@ const interval2Function = () => {
 	pendingEmbeds = [];
 	const groups: IWebhookEmbed[][] = [];
 	for (let i = 0; i < all.length; i++) {
-		const index = i % 10;
+		const index = Math.floor(i / 10);
 		const group = groups[index] ?? (groups[index] = []);
 		group.push(all[i]);
 	}
