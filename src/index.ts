@@ -11,10 +11,34 @@ const logstream = await open('./chat.log', 'a');
 let shutdown = false;
 let disconnectCount = 0;
 
-const interval1 = setInterval(() => {
+const interval1Function = () => {
 	"use strict";
 	if (disconnectCount > 0) disconnectCount--;
-}, 60000);
+};
+
+let interval1 = setInterval(interval1Function, 60000);
+
+let pendingEmbeds: IWebhookEmbed[] = [];
+
+const interval2Function = () => {
+	"use strict";
+	const all = pendingEmbeds;
+	if (all.length === 0) return;
+	pendingEmbeds = [];
+	const groups: IWebhookEmbed[][] = [];
+	for (let i = 0; i < all.length; i++) {
+		const index = i % 10;
+		const group = groups[index] ?? (groups[index] = []);
+		group.push(all[i]);
+	}
+	for (const embeds of groups) {
+		config.discord.execute({
+			embeds,
+		}).catch(console.error);
+	}
+};
+
+let interval2 = setInterval(interval2Function, 10000);
 
 function onOpen(event: {
 	target: _WebSocket;
@@ -86,7 +110,6 @@ function onMessage(event: {
 	logstream.write(event.data);
 	const messages = event.data.split(lineSplitter) as string[];
 	messages.pop();
-	const embeds = [];
 	const length = messages.length;
 	for (let i = 0; i < length; i++) {
 		const message = messages[i];
@@ -101,7 +124,7 @@ function onMessage(event: {
 		} else meta = [];
 		const [, command, ...args] = split;
 		const embed = toEmbed(meta, command, args);
-		if (embed) embeds.push(embed);
+		if (embed) pendingEmbeds.push(embed);
 		if (command === 'PRIVMSG') {
 			const [channel, ...text] = args;
 			if (channel !== `#${config.twitch.channel}`) continue;
@@ -127,22 +150,19 @@ function onMessage(event: {
 			}
 		}
 	}
-	if (embeds.length) config.discord.execute({
-		allowed_mentions: {
-			parse: [],
-		},
-		embeds,
-	}).catch(console.error);
 }
 
 function onDisconnect() {
 	"use strict";
+	interval2Function();
 	config.discord.execute({
 		content: 'Disconnected',
 	}).catch(console.error);
 	if (shutdown) {
 		interval1.unref();
 		clearInterval(interval1);
+		interval2.unref();
+		clearInterval(interval2);
 		return;
 	}
 	const timer = 2 ** disconnectCount;
