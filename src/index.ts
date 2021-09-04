@@ -29,7 +29,7 @@ function onOpen(event: {
 	ws.send(`JOIN #${config.twitch.channel}`);
 	config.discord.execute({
 		content: 'Connected, and authenticating',
-	});
+	}).catch(console.error);
 }
 
 const lineSplitter = /\r?\n/g;
@@ -132,14 +132,14 @@ function onMessage(event: {
 			parse: [],
 		},
 		embeds,
-	});
+	}).catch(console.error);
 }
 
 function onDisconnect() {
 	"use strict";
 	config.discord.execute({
 		content: 'Disconnected',
-	});
+	}).catch(console.error);
 	if (shutdown) {
 		interval1.unref();
 		clearInterval(interval1);
